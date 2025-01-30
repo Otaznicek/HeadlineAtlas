@@ -1,42 +1,182 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
-    crossorigin=""/>
     <meta charset="UTF-8">
-    <style>
-        #map { height: 500px; }
-    </style>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Modern Dashboard</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/luxon/3.3.0/luxon.min.js"></script> <!-- Luxon pro formátování datumu -->
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+        }
+        .content-wrapper {
+            display: flex;
+            height: 100vh;
+        }
+        .map-container {
+            flex: 2;
+            padding: 20px;
+        }
+        .map-container #map {
+            height: 100%;
+            border-radius: 8px;
+        }
+        .sidebar {
+            flex: 1;
+            background-color: #343a40;
+            color: white;
+            overflow-y: auto;
+            padding: 20px;
+            box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);
+        }
+        .sidebar h2 {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        .sidebar .article-list {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+        .sidebar .article-list li {
+            background-color: #495057;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            overflow: hidden;
+            transition: all 0.3s;
+            padding: 10px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+        }
+        .sidebar .article-list li:hover {
+            background-color: #6c757d;
+            transform: scale(1.02);
+        }
+        .sidebar .article-list a {
+            color: white;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: bold;
+            display: block;
+            margin-bottom: 5px;
+        }
+        .sidebar .article-list .source {
+            font-size: 12px;
+            color: #adb5bd;
+            font-style: italic;
+        }
+        .sidebar .article-list a:hover {
+            text-decoration: underline;
+        }
+        .go-to-location {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-top: 5px;
+            align-self: flex-start;
+        }
+        .go-to-location:hover {
+            background-color: #0056b3;
+        }
+        .created-at {
+            font-size: 12px;
+            color: #adb5bd;
+            font-style: italic;
+            margin-top: 5px;
+        }
+    </style>
 </head>
 <body>
-    <div id="map"></div>
-    
+    <div class="content-wrapper">
+        <!-- Mapa -->
+        <div class="map-container">
+            <h1>Mapa článků</h1>
+            <div id="map"></div>
+        </div>
 
-     <!-- Make sure you put this AFTER Leaflet's CSS -->
- <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
- integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
- crossorigin="">
-</script>
+        <!-- Sidebar napravo -->
+        <div class="sidebar">
+            <h2>Seznam článků</h2>
+            <ul class="article-list">
+                {% for article in articles %}
+                    <li>
+                        <div>
+                            <a href="{{ article.zdroj }}" target="_blank">
+                                {{ loop.index }}. {{ article.nazev_clanku }}
+                            </a>
+                            <span class="source">Zdroj: {{ article.zdroj }}</span>
+                            <span class="created-at" data-time="{{ article.created_at }}"></span> <!-- Datum článku -->
+                        </div>
+                        <button class="go-to-location" data-id="{{ loop.index }}">Přejít na lokaci</button>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
 
-<script> var map = L.map('map').setView([48.2806,37.1758], 6);
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
+    <script>
+        // Inicializace mapy
+        const map = L.map('map').setView([50, 14], 4); // Výchozí pozice
 
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: 'Map data © <a href="https://www.openstreetmap.org/copyright">'
-}).addTo(map);
+        // Přidání mapových dlaždic
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
 
+        // Data článků (ze serveru přes Jinja)
+        const articles = {{ articles | safe }};
+        const markers = {}; // Objekt pro uložení markerů
 
-     var latlng = L.latLng( {{long}} , {{lat}} );
-     var popup = L.popup({
-        closeOnClick: false  // Ensure the popup does not close when clicking on the map
-     })
-     .setLatLng(latlng)
-     .setContent('<img src="https://i1.sndcdn.com/artworks-zyYqA8D0BdfuyH28-WeeHrw-t500x500.jpg" height="50px" width="50px">')
-     .openOn(map);
-     
+        // Přidání markerů na mapu
+        articles.forEach((article, index) => {
+            if (article.zem_sirka && article.zem_vyska) {
+                const lat = article.zem_sirka + (Math.random(0,1)) / 100;  // Náhodný posun pro překrývající markery
+                const lng = article.zem_vyska + (Math.random(0,1)) / 100;
 
-</script>
+                const marker = L.marker([lat, lng])
+                    .addTo(map)
+                    .bindPopup(`<strong>${article.nazev_clanku}</strong><br><a href="${article.zdroj}" target="_blank">Zobrazit článek</a>`);
+
+                markers[index + 1] = marker; // Uložíme marker podle indexu článku
+            }
+        });
+
+        // Přidání event listeneru pro tlačítka "Přejít na lokaci"
+        document.querySelectorAll(".go-to-location").forEach(button => {
+            button.addEventListener("click", function () {
+                const articleId = this.dataset.id;
+                const marker = markers[articleId];
+
+                if (marker) {
+                    map.setView(marker.getLatLng(), 8); // Přiblížení na kliknutý marker
+                    marker.openPopup(); // Otevření popupu
+                }
+            });
+        });
+
+        // Formátování času pomocí Luxon
+        document.querySelectorAll(".created-at").forEach(span => {
+            const rawTime = span.dataset.time;
+            if (rawTime) {
+                const formattedTime = luxon.DateTime.fromISO(rawTime).setLocale("cs").toFormat("d. LLLL yyyy v HH:mm");
+                span.textContent = `Přidáno: ${formattedTime}`;
+            }
+        });
+    </script>
 </body>
 </html>

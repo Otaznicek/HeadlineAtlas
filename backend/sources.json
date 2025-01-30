@@ -1,0 +1,38 @@
+[
+    {
+      "name": "Seznam Zprávy",
+      "url": "https://www.seznamzpravy.cz/"
+    },
+    {
+      "name": "Novinky.cz",
+      "url": "https://www.novinky.cz/"
+    },
+    {
+      "name": "iDNES.cz",
+      "url": "https://www.idnes.cz/"
+    },
+    {
+      "name": "Aktuálně.cz",
+      "url": "https://www.aktualne.cz/"
+    },
+    {
+      "name": "Deník.cz",
+      "url": "https://www.denik.cz/"
+    },
+    {
+      "name": "ČT24.cz",
+      "url": "https://ct24.ceskatelevize.cz/"
+    },
+    {
+      "name": "iROZHLAS.cz",
+      "url": "https://www.irozhlas.cz/"
+    },
+    {
+      "name": "CNN Prima News",
+      "url": "https://cnn.iprima.cz/"
+    },
+    {
+      "name": "Lidovky.cz",
+      "url": "https://www.lidovky.cz/"
+    }
+  ]

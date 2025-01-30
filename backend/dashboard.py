@@ -1,7 +1,14 @@
-from flask import Flask,render_template
+from flask import Blueprint, render_template
+from .database import Database
 
-app = Flask(__name__, template_folder='../web/templates')
+# Definice Blueprintu
+dashboard_app = Blueprint("dashboard", __name__, template_folder="../web/templates")
 
-@app.route("/")
+@dashboard_app.route("/")
 def dashboard():
-    return render_template("dashboard.jinja",long=48.7361,lat=16.6362)
+    # Načtení všech článků z databáze
+    articles = Database.get_all_articles()
+
+    if articles:
+        return render_template("dashboard.jinja", articles=articles)
+    return "No articles found", 404
