@@ -39,7 +39,7 @@ class Caller:
         )
 
         data = {"model": "wp-watt-3.52-16k", "content": prompt}
-        headers = {"Authorization": "Bearer 1ee0e7cd5150414e8950d815292cc750"}
+        headers = {"Authorization": ""}
 
         rsp = requests.post("https://beta.webpilotai.com/api/v1/watt", json=data, headers=headers)
         if rsp.status_code != 200:
